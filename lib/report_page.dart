@@ -131,12 +131,12 @@ class ReportPage extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => JobPostingPage()),
+                        MaterialPageRoute(builder: (context) => PlumberAdPage()),
                       );
                     },
                     child: CategoryCard(
-                      icon: Icons.business_center,
-                      label: 'Job Opportunities',
+                      icon: Icons.handyman,
+                      label: 'find a plumber',
                     ),
                   ),
                   GestureDetector(

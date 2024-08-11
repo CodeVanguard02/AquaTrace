@@ -1,41 +1,44 @@
 import 'package:flutter/material.dart';
 
-class JobPostingPage extends StatefulWidget {
+class PlumberAdPage extends StatefulWidget {
   @override
-  _JobPostingPageState createState() => _JobPostingPageState();
+  _PlumberAdPageState createState() => _PlumberAdPageState();
 }
 
-class _JobPostingPageState extends State<JobPostingPage> {
+class _PlumberAdPageState extends State<PlumberAdPage> {
   final _formKey = GlobalKey<FormState>();
-  late String _jobTitle;
-  late String _jobDescription;
-  late String _skills;
+  late String _plumberName;
+  late String _services;
+  late String _price;
   late String _contact;
   late String _location;
 
-  // List of job posts
-  List<JobPost> jobPosts = [
-    JobPost(
-      title: 'Software Engineer',
-      description: 'Experienced software engineer needed for a startup',
-      skills: 'Java, Python, JavaScript',
-      contact: 'twarisani@gmail.com',
+  // List of plumber ads
+  List<PlumberAd> plumberAds = [
+    PlumberAd(
+      name: 'John Doe Plumbing',
+      services: 'Leak Repair, Pipe Installation',
+      price: 'From \$50', // Escape dollar sign
+      contact: 'john.doe@gmail.com',
       location: 'Johannesburg',
     ),
-    JobPost(
-      title: 'Job Seeker',
-      description: 'Looking for a job as a software engineer',
-      skills: 'Java, Python, JavaScript',
-      contact: 'masibonge@gmail.com',
-      location: 'Limehill',
+    PlumberAd(
+      name: 'Jane Smith Plumbing',
+      services: 'Drain Cleaning, Water Heater Repair',
+      price: 'From \$70', // Escape dollar sign
+      contact: 'jane.smith@gmail.com',
+      location: 'Cape Town',
     ),
   ];
+
+  // Search filters
+  String _searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Job Postings'),
+        title: Text('Plumber Ads'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -47,44 +50,44 @@ class _JobPostingPageState extends State<JobPostingPage> {
                 children: [
                   TextFormField(
                     decoration: InputDecoration(
-                      labelText: 'Job Title',
+                      labelText: 'Plumber Name',
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a job title';
+                        return 'Please enter the plumber\'s name';
                       }
                       return null;
                     },
-                    onSaved: (value) => _jobTitle = value!,
+                    onSaved: (value) => _plumberName = value!,
                   ),
                   SizedBox(height: 16),
                   TextFormField(
                     decoration: InputDecoration(
-                      labelText: 'Job Description',
+                      labelText: 'Services',
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a job description';
+                        return 'Please enter the services provided';
                       }
                       return null;
                     },
-                    onSaved: (value) => _jobDescription = value!,
+                    onSaved: (value) => _services = value!,
                   ),
                   SizedBox(height: 16),
                   TextFormField(
                     decoration: InputDecoration(
-                      labelText: 'Skills',
+                      labelText: 'Price',
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your skills';
+                        return 'Please enter the price range';
                       }
                       return null;
                     },
-                    onSaved: (value) => _skills = value!,
+                    onSaved: (value) => _price = value!,
                   ),
                   SizedBox(height: 16),
                   TextFormField(
@@ -120,35 +123,56 @@ class _JobPostingPageState extends State<JobPostingPage> {
                       if (_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
                         setState(() {
-                          jobPosts.add(
-                            JobPost(
-                              title: _jobTitle,
-                              description: _jobDescription,
-                              skills: _skills,
+                          plumberAds.add(
+                            PlumberAd(
+                              name: _plumberName,
+                              services: _services,
+                              price: _price,
                               contact: _contact,
                               location: _location,
                             ),
                           );
                         });
-                        print('Job posted successfully!');
+                        print('Plumber ad posted successfully!');
                       }
                     },
-                    child: Text('Post Job'),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Note: These job postings are not verified. Please exercise caution when applying for jobs.',
-                    style: TextStyle(color: Colors.red),
+                    child: Text('Post Ad'),
                   ),
                 ],
               ),
             ),
             SizedBox(height: 16),
+            TextFormField(
+              decoration: InputDecoration(
+                labelText: 'Search by name or location',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.toLowerCase();
+                });
+              },
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Note: These plumber ads are not verified. Please exercise caution when contacting or hiring plumbers.',
+              style: TextStyle(color: Colors.red),
+            ),
+            SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
-                itemCount: jobPosts.length,
+                itemCount: plumberAds
+                    .where((ad) =>
+                ad.name.toLowerCase().contains(_searchQuery) ||
+                    ad.location.toLowerCase().contains(_searchQuery))
+                    .length,
                 itemBuilder: (context, index) {
-                  return JobPostCard(jobPost: jobPosts[index]);
+                  final ad = plumberAds
+                      .where((ad) =>
+                  ad.name.toLowerCase().contains(_searchQuery) ||
+                      ad.location.toLowerCase().contains(_searchQuery))
+                      .toList()[index];
+                  return PlumberAdCard(plumberAd: ad);
                 },
               ),
             ),
@@ -159,26 +183,26 @@ class _JobPostingPageState extends State<JobPostingPage> {
   }
 }
 
-class JobPost {
-  final String title;
-  final String description;
-  final String skills;
+class PlumberAd {
+  final String name;
+  final String services;
+  final String price;
   final String contact;
   final String location;
 
-  JobPost({
-    required this.title,
-    required this.description,
-    required this.skills,
+  PlumberAd({
+    required this.name,
+    required this.services,
+    required this.price,
     required this.contact,
     required this.location,
   });
 }
 
-class JobPostCard extends StatelessWidget {
-  final JobPost jobPost;
+class PlumberAdCard extends StatelessWidget {
+  final PlumberAd plumberAd;
 
-  const JobPostCard({required this.jobPost});
+  const PlumberAdCard({required this.plumberAd});
 
   @override
   Widget build(BuildContext context) {
@@ -189,17 +213,17 @@ class JobPostCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              jobPost.title,
+              plumberAd.name,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
-            Text(jobPost.description),
+            Text('Services: ${plumberAd.services}'),
             SizedBox(height: 8),
-            Text('Skills: ${jobPost.skills}'),
+            Text('Price: ${plumberAd.price}'),
             SizedBox(height: 8),
-            Text('Contact: ${jobPost.contact}'),
+            Text('Contact: ${plumberAd.contact}'),
             SizedBox(height: 8),
-            Text('Location: ${jobPost.location}'),
+            Text('Location: ${plumberAd.location}'),
           ],
         ),
       ),

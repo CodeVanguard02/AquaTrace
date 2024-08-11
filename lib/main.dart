@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'SeeReport.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:mysql1/mysql1.dart';
 import 'chat.dart';
 import 'report_page.dart';
+import 'profile_page.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'announcements.dart';
+
 void main() => runApp(const AquaTraceApp());
 
 class AquaTraceApp extends StatelessWidget {
@@ -16,7 +18,7 @@ class AquaTraceApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.teal,
       ),
-      home: const SignInCitizenPage(),
+      home: SignInPage(),
     );
   }
 }
@@ -44,101 +46,191 @@ class BackgroundWidget extends StatelessWidget {
   }
 }
 //start of the signinascitizen page
-class SignInCitizenPage extends StatelessWidget {
-  const SignInCitizenPage({Key? key}) : super(key: key);
+class SignInPage extends StatefulWidget {
+  @override
+  _SignInPageState createState() => _SignInPageState();
+}
+
+class _SignInPageState extends State<SignInPage> {
+  final _usernameController = TextEditingController();
+  final _meterNumberController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  String _errorMessage = '';
+
+  void _login() {
+    setState(() {
+      _errorMessage = '';
+      String username = _usernameController.text;
+      String meterNumber = _meterNumberController.text;
+      String password = _passwordController.text;
+
+      if (username.isEmpty || meterNumber.isEmpty || password.isEmpty) {
+        _errorMessage = 'Username, Meter Number, and Password cannot be empty.';
+      } else if (meterNumber.length != 7 || !RegExp(r'^[0-9]+$').hasMatch(meterNumber)) {
+        _errorMessage = 'Meter Number must be a 7-digit number.';
+      } else {
+        // Navigate to Home Page
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MainPage()),
+        );
+      }
+    });
+  }
+
+  void _navigateToSignUp() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SignUpPage()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sign In as Citizen'),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      body: Stack(
         children: [
-          SignInForm(
-            title: 'Citizen',
-            onSignUp: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SignUpPage()),
-              );
-            },
+          // Background Image
+          Positioned.fill(
+            child: Image.asset(
+              'assets/backgroundimg.jpeg',
+              fit: BoxFit.cover,
+            ),
           ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SignInAdminPage()),
-                  );
-                },
-                child: const Text('Sign In as Admin'),
+
+
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withOpacity(0.5),
+            ),
+          ),
+
+          // Main content
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo or Icon
+                  Container(
+                    height: 200,
+                    child: Image.asset('assets/logo.png'),
+                  ),
+                  SizedBox(height: 30),
+
+                  // Username TextField
+                  TextField(
+                    controller: _usernameController,
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      labelStyle: TextStyle(color: Colors.white),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.1),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+
+                  // Meter Number TextField
+                  TextField(
+                    controller: _meterNumberController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Meter Number',
+                      labelStyle: TextStyle(color: Colors.white),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.1),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+
+                  // Password TextField
+                  TextField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      labelStyle: TextStyle(color: Colors.white),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.1),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 30),
+
+                  // Error Message
+                  if (_errorMessage.isNotEmpty)
+                    Text(
+                      _errorMessage,
+                      style: TextStyle(color: Colors.red),
+                    ),
+
+                  SizedBox(height: 20),
+
+                  // Login Button
+                  ElevatedButton(
+                    onPressed: _login,
+                    child: Text('Log In'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue, // Button color
+                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 100),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 20),
+
+                  // Signup and Forgot Password
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Do not have an account?",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      TextButton(
+                        onPressed: _navigateToSignUp,
+                        child: Text(
+                          'Sign Up',
+                          style: TextStyle(color: Colors.blue),
+                        ),
+                      ),
+                    ],
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // Handle forgotten password action
+                    },
+                    child: Text(
+                      'Forgotten Password',
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 10),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SignInPlumberPage()),
-                  );
-                },
-                child: const Text('Sign In as Plumber'),
-              ),
-            ],
+            ),
           ),
         ],
       ),
     );
   }
 }
-//start of the signinasadmin page
-class SignInAdminPage extends StatelessWidget {
-  const SignInAdminPage({Key? key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sign In as Admin'),
-      ),
-      body: SignInForm(
-        title: 'Admin',
-        onSignUp: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const SignUpPage()),
-          );
-        },
-      ),
-    );
-  }
-}
-//start of the signinasplumber page
-class SignInPlumberPage extends StatelessWidget {
-  const SignInPlumberPage({Key? key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sign In as Plumber'),
-      ),
-      body: SignInForm(
-        title: 'Plumber',
-        onSignUp: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const SignUpPage()),
-          );
-        },
-      ),
-    );
-  }
-}
 //Register page
 class SignUpPage extends StatelessWidget {
   const SignUpPage({Key? key}) : super(key: key);
@@ -173,12 +265,12 @@ class _SignInFormState extends State<SignInForm> {
   void _submit() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      // Implement your sign-in logic here (e.g., call Firebase Auth)
+
       print('${widget.title} Email: $_email');
       print('Meter number: $_meterno');
       print('Password: $_password');
 
-      // Navigate to the main page (assuming it exists)
+      // Navigate to the main page
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const MainPage()),
@@ -268,165 +360,365 @@ class _SignUpFormState extends State<SignUpForm> {
   String _selectedGender = 'Male';
   final List<String> _genders = ['Male', 'Female', 'Other'];
 
+  // TextEditingControllers to handle the input values for comparison
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _confirmEmailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _confirmEmailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
   void _submit() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      // Implement your sign-up logic here (e.g., call Firebase Auth)
-      print('Name: $_name');
-      print('Surname: $_surname');
-      print('Meter number: $_meterno');
-      print('Cellphone number: $_cellno');
-      print('Sign Up Email: $_email');
-      print('Confirm email: $_confirmEmail');
-      print('Sign Up Password: $_password');
-      print('Confirm password: $_confirmPassword');
-      print('Selected Gender: $_selectedGender');
-      // Navigate to the main page (assuming it exists)
+
+      // Pop-up message for successful registration
+      Fluttertoast.showToast(
+        msg: "Account created successfully!",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+
+      // Navigate to the Sign-In page
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const MainPage()),
+        MaterialPageRoute(builder: (context) => SignInPage()),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Name'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your name';
-                }
-                return null;
-              },
-              onSaved: (value) {
-                _name = value!;
-              },
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Background Image
+          Positioned.fill(
+            child: Image.asset(
+              'assets/backgroundimg.jpeg',
+              fit: BoxFit.cover,
             ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Surname'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your surname';
-                }
-                return null;
-              },
-              onSaved: (value) {
-                _surname = value!;
-              },
+          ),
+          // Dark overlay to enhance text visibility
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withOpacity(0.3), // Adjust opacity as needed
             ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Meter number'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your home water meter number';
-                }
-                return null;
-              },
-              onSaved: (value) {
-                _meterno = value!;
-              },
+          ),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Name Field
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Name',
+                          labelStyle: const TextStyle(color: Colors.white),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your name';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _name = value!;
+                        },
+                      ),
+                      const SizedBox(height: 16.0),
+
+                      // Surname Field
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Surname',
+                          labelStyle: const TextStyle(color: Colors.white),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your surname';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _surname = value!;
+                        },
+                      ),
+                      const SizedBox(height: 16.0),
+
+                      // Cell Phone Number Field
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Cell Phone Number',
+                          labelStyle: const TextStyle(color: Colors.white),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your cellphone number';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _cellno = value!;
+                        },
+                      ),
+                      const SizedBox(height: 16.0),
+
+                      // Meter Number Field
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Meter Number',
+                          labelStyle: const TextStyle(color: Colors.white),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your home water meter number';
+                          } else if (value.length != 7 || !RegExp(r'^[0-9]+$').hasMatch(value)) {
+                            return 'Meter Number must be a 7-digit number';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _meterno = value!;
+                        },
+                      ),
+                      const SizedBox(height: 16.0),
+
+                      // Email Field
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          labelStyle: const TextStyle(color: Colors.white),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your email';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _email = value!;
+                        },
+                      ),
+                      const SizedBox(height: 16.0),
+
+                      // Confirm Email Field
+                      TextFormField(
+                        controller: _confirmEmailController,
+                        decoration: InputDecoration(
+                          labelText: 'Confirm Email',
+                          labelStyle: const TextStyle(color: Colors.white),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please confirm your email';
+                          }
+                          if (value != _emailController.text) {
+                            return 'Emails do not match';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _confirmEmail = value!;
+                        },
+                      ),
+                      const SizedBox(height: 16.0),
+
+                      // Password Field
+                      TextFormField(
+                        controller: _passwordController,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          labelStyle: const TextStyle(color: Colors.white),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        obscureText: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _password = value!;
+                        },
+                      ),
+                      const SizedBox(height: 16.0),
+
+                      // Confirm Password Field
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        decoration: InputDecoration(
+                          labelText: 'Confirm Password',
+                          labelStyle: const TextStyle(color: Colors.white),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        obscureText: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please confirm your password';
+                          }
+                          if (value != _passwordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _confirmPassword = value!;
+                        },
+                      ),
+                      const SizedBox(height: 16.0),
+
+                      // Gender Dropdown Field
+                      DropdownButtonFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Gender',
+                          labelStyle: const TextStyle(color: Colors.white),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        value: _selectedGender,
+                        items: _genders.map((String gender) {
+                          return DropdownMenuItem(
+                            value: gender,
+                            child: Text(gender),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedGender = value as String;
+                          });
+                        },
+                        onSaved: (value) {
+                          _selectedGender = value as String;
+                        },
+                      ),
+                      const SizedBox(height: 20.0),
+
+                      // Register Button
+                      ElevatedButton(
+                        onPressed: _submit,
+                        child: const Text('Register'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          backgroundColor: Colors.blue, // Match the register button style
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Sign-In Navigation Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Already have an account?",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              // Navigate to the Sign-In page
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => SignInPage()),
+                              );
+                            },
+                            child: const Text(
+                              'Sign In',
+                              style: TextStyle(
+                                color: Colors.blue, // Match the sign-in button style
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'CellPhone Number'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your cellphone number';
-                }
-                return null;
-              },
-              onSaved: (value) {
-                _cellno = value!;
-              },
-            ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
-                }
-                return null;
-              },
-              onSaved: (value) {
-                _email = value!;
-              },
-            ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Confirm Email'),
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value != _email || value == null) {
-                  return 'Emails do not match';
-                }
-                return null;
-              },
-              onSaved: (value) {
-                _confirmEmail = value!;
-              },
-            ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your password';
-                }
-                return null;
-              },
-              onSaved: (value) {
-                _password = value!;
-              },
-            ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Confirm Password'),
-              obscureText: true,
-              validator: (value) {
-                if (value != _password || value == null) {
-                  return 'Passwords do not match';
-                }
-                return null;
-              },
-              onSaved: (value) {
-                _confirmPassword = value!;
-              },
-            ),
-            DropdownButtonFormField(
-              decoration: const InputDecoration(labelText: 'Gender'),
-              value: _selectedGender,
-              items: _genders.map((String gender) {
-                return DropdownMenuItem(
-                  value: gender,
-                  child: Text(gender),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedGender = value as String;
-                });
-              },
-              onSaved: (value) {
-                _selectedGender = value as String;
-              },
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _submit,
-              child: const Text('Register'),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
+
+
 //Start of the home page
+
+
 class MainPage extends StatelessWidget {
   const MainPage({Key? key}) : super(key: key);
 
@@ -436,119 +728,199 @@ class MainPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('My Account'),
         leading: IconButton(
-          icon: Icon(Icons.menu),
+          icon: const Icon(Icons.menu),
           onPressed: () {
             Scaffold.of(context).openDrawer();
           },
         ),
+        backgroundColor: Colors.blue,
       ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
-              child: Text(
-                'Menu',
+              child: const Text(
+                'Welcome\nAquaTrace',
                 style: TextStyle(color: Colors.white, fontSize: 25),
               ),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.blue,
               ),
             ),
             ListTile(
-              leading: Icon(Icons.person),
-              title: Text('Profile'),
+              leading: const Icon(Icons.person),
+              title: const Text('Profile'),
               onTap: () {
                 Navigator.push(
                   context,
-                    MaterialPageRoute(builder: (context) => ProfilePage()),
+                  MaterialPageRoute(builder: (context) => const ProfilePage()),
                 );
               },
             ),
-            // Add more ListTile widgets here for additional menu items
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: const BoxDecoration(
-                color: Colors.blueAccent,
+      body: Stack(
+        children: [
+          // Background Image
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/backgroundimg.jpeg'),
+                fit: BoxFit.cover,
               ),
-              child: Column(
-                children: [
-                  const Text(
-                    'Water Credit',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Colors.white,
-                    child: Text(
-                      '110L/300L',
-                      style: TextStyle(
-                        color: Colors.blueAccent,
-                        fontWeight: FontWeight.bold,
+            ),
+          ),
+          Column(
+            children: [
+              // Row containing the text and CircleAvatar
+              Container(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Welcome Text
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.only(left: 16.0),
+                        child: const Text(
+                          'Welcome to AquaTrace',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const SeeReportPage()),
-                      );
-                    }, // Implement see report logic
-                    child: const Text('See Report'),
-                  ),
-                ],
+                    // CircleAvatar
+                    Container(
+                      padding: const EdgeInsets.only(right: 250.0),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            image: AssetImage('assets/background.jpeg'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: CircleAvatar(
+                            radius: 95,
+                            backgroundColor: Colors.transparent,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'Water Credit',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                const Text(
+                                  '110L/330L',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const SeeReportPage()),
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue[900],
+                                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  ),
+                                  child: const Text(
+                                    'See Report',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  const Text(
-                    'Recent Water Updates',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              Expanded(
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    padding: const EdgeInsets.all(16.0),
+                    color: Colors.transparent,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: const Text(
+                            'Recent Water Updates',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        _buildWaterUpdate(
+                          context,
+                          'The city has announced that water will be shut off on Main Street from 9 AM to 2 PM tomorrow for maintenance work; residents are advised to store enough water in advance.',
+                          '18:09 13/07/2024',
+                        ),
+                        const SizedBox(height: 10),
+                        _buildWaterUpdate(
+                          context,
+                          'Due to a burst pipe, water service is currently disrupted in the Oakwood neighborhood. Repair crews are on-site, and the issue is expected to be resolved by 6 PM today.',
+                          '18:59 13/07/2024',
+                        ),
+                        const SizedBox(height: 10),
+                        TextButton(
+                          onPressed: () {
+                            // Navigate to a new page showing more announcements
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const MoreAnnouncementsPage()),
+                            );
+                          },
+                          child: const Text(
+                            'See more...',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  _buildWaterUpdate(
-                    context,
-                    'Due to a burst pipe, water service is currently disrupted in the Oakwood neighborhood. Repair crews are on-site, and the issue is expected to be resolved by 6 PM today.',
-                    '18:09 13/07/2024',
-                  ),
-                  const SizedBox(height: 10),
-                  _buildWaterUpdate(
-                    context,
-                    'The city has announced that water will be shut off on Main Street from 9 AM to 2 PM tomorrow for maintenance work; residents are advised to store enough water in advance.',
-                    '18:09 13/07/2024',
-                  ),
-                  const SizedBox(height: 10),
-                  TextButton(
-                    onPressed: () {
-                      // Implement see more logic
-                    },
-                    child: const Text('See more...'),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.blueAccent,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.blue[900],
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -568,19 +940,8 @@ class MainPage extends StatelessWidget {
           ),
         ],
         onTap: (int index) {
-          if (index == 3) {
-            // Navigate to ProfilePage
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProfilePage()),
-            );
-          }
-          if (index == 2) {
-            // Navigate to ProfilePage
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ChatScreen(passengerName: 'Sinesipho')),
-            );
+          if (index == 0) {
+            // Navigate to home page
           }
           if (index == 1) {
             Navigator.push(
@@ -588,194 +949,55 @@ class MainPage extends StatelessWidget {
               MaterialPageRoute(builder: (context) => ReportPage()),
             );
           }
+          if (index == 2) {
+            // Navigate to chatscreen
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ChatScreen(passengerName: 'Sinesipho')),
+            );
+          }
+          if (index == 3) {
+            // Navigate to ProfilePage
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfilePage()),
+            );
+          }
         },
       ),
     );
   }
-}
 
-Widget _buildWaterUpdate(BuildContext context, String text, String dateTime) {
-  return Row(
-    children: [
-      const CircleAvatar(
-        child: Icon(Icons.admin_panel_settings),
+  Widget _buildWaterUpdate(BuildContext context, String text, String dateTime) {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(10),
       ),
-      const SizedBox(width: 10),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              text,
-              style: const TextStyle(fontSize: 16),
+      child: Row(
+        children: [
+          const CircleAvatar(
+            child: Icon(Icons.admin_panel_settings),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  text,
+                  style: const TextStyle(fontSize: 16, color: Colors.white),
+                ),
+                Text(
+                  dateTime,
+                  style: const TextStyle(color: Colors.grey),
+                ),
+              ],
             ),
-            Text(
-              dateTime,
-              style: const TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
-}
-
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
-
-  void _logSupportTicket(BuildContext context) {
-    final String email = 'shabalalamasibonge@gmail.com';
-    print('Support ticket logged for email: $email');
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Chat Support'),
-          content: const Text('A support ticket has been logged. You will be connected with an assistant shortly.'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _launchURL(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
-
-  Future<void> _updatePin() async {
-    final conn = await MySqlConnection.connect(ConnectionSettings(
-      host: 'your_host', // Replace with your MySQL host
-      port: 3306,
-      user: 'your_username', // Replace with your MySQL username
-      db: 'your_database', // Replace with your MySQL database name
-      password: 'your_password', // Replace with your MySQL password
-    ));
-
-    await conn.query(
-        'UPDATE users SET pin = ? WHERE email = ?',
-        ['new_pin', 'shabalalamasibonge@gmail.com'] // Replace with the actual new PIN and user's email
-    );
-
-    await conn.close();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Profile'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: () {
-                print('Upload profile picture');
-              },
-              child: CircleAvatar(
-                radius: 50,
-                backgroundImage: AssetImage('assets/profile_placeholder.png'),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Masibonge', // Replace with logged-in user's name
-              style: TextStyle(fontSize: 24),
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              leading: Icon(Icons.edit),
-              title: Text('Update PIN'),
-              onTap: () async {
-                // Update PIN logic
-                print('Update PIN');
-                await _updatePin();
-                print('PIN updated');
-              },
-            ),
-            Divider(),
-            ListTile(
-              leading: Icon(Icons.privacy_tip),
-              title: Text('Privacy Policy'),
-              onTap: () {
-                _launchURL('https://aquatraceprivacypolicy.vercel.app/');
-              },
-            ),
-            Divider(),
-            ListTile(
-              leading: Icon(Icons.description),
-              title: Text('Terms and Conditions'),
-              onTap: () {
-                _launchURL('https://aquatrace-ts-cs.vercel.app/');
-              },
-            ),
-            Divider(),
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Profile Management'),
-              onTap: () {
-                print('Navigate to Profile Management');
-              },
-            ),
-            Divider(),
-            ListTile(
-              leading: Icon(Icons.delete),
-              title: Text('Delete Account'),
-              onTap: () {
-                print('Delete account');
-              },
-            ),
-            Divider(),
-            ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Logout'),
-              onTap: () {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SignInCitizenPage()),
-                      (route) => false,
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Support',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Divider(),
-            ListTile(
-              leading: Icon(Icons.feedback),
-              title: Text('Feedback'),
-              onTap: () {
-                print('Navigate to Feedback');
-              },
-            ),
-            Divider(),
-            ListTile(
-              leading: Icon(Icons.chat),
-              title: Text('Chat Support'),
-              onTap: () {
-                _logSupportTicket(context);
-              },
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
-

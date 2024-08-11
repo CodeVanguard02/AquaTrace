@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // for formatting timestamps
 import 'package:geolocator/geolocator.dart'; // for getting user location
+import 'package:geocoding/geocoding.dart'; // for reverse geocoding
 
 class WeatherIssuePage extends StatefulWidget {
   @override
@@ -9,6 +10,7 @@ class WeatherIssuePage extends StatefulWidget {
 
 class _WeatherIssuePageState extends State<WeatherIssuePage> {
   final _postController = TextEditingController();
+  String _currentCity = '';
 
   List<WeatherIssuePost> _weatherIssuePosts = [
     WeatherIssuePost(
@@ -48,6 +50,26 @@ class _WeatherIssuePageState extends State<WeatherIssuePage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _getCurrentCity();
+  }
+
+  Future<void> _getCurrentCity() async {
+    try {
+      final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      final placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      if (placemarks.isNotEmpty) {
+        setState(() {
+          _currentCity = placemarks.first.locality ?? '';
+        });
+      }
+    } catch (e) {
+      print('Error getting location: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -77,6 +99,7 @@ class _WeatherIssuePageState extends State<WeatherIssuePage> {
                   return WeatherIssuePostCard(
                     post: _weatherIssuePosts[index],
                     onComment: _submitComment,
+                    onDelete: _deletePost,
                   );
                 },
               ),
@@ -87,11 +110,11 @@ class _WeatherIssuePageState extends State<WeatherIssuePage> {
     );
   }
 
-  void _submitPost() async {
+  void _submitPost() {
     final post = WeatherIssuePost(
       id: _weatherIssuePosts.length + 1,
       message: _postController.text,
-      location: await _getCurrentLocation(),
+      location: _currentCity,
       timestamp: DateTime.now(),
       comments: [],
     );
@@ -101,13 +124,12 @@ class _WeatherIssuePageState extends State<WeatherIssuePage> {
     });
   }
 
-  void _submitComment(WeatherIssuePost post, String comment) async {
-    final commentLocation = await _getCurrentLocation();
+  void _submitComment(WeatherIssuePost post, String comment) {
     final commentTimestamp = DateTime.now();
     final newComment = WeatherIssueComment(
       id: post.comments.length + 1,
       message: comment,
-      location: commentLocation,
+      location: _currentCity,
       timestamp: commentTimestamp,
     );
     setState(() {
@@ -115,9 +137,10 @@ class _WeatherIssuePageState extends State<WeatherIssuePage> {
     });
   }
 
-  Future<String> _getCurrentLocation() async {
-    final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    return '${position.latitude}, ${position.longitude}';
+  void _deletePost(int postId) {
+    setState(() {
+      _weatherIssuePosts.removeWhere((post) => post.id == postId);
+    });
   }
 }
 
@@ -143,8 +166,9 @@ class WeatherIssueComment {
 class WeatherIssuePostCard extends StatefulWidget {
   final WeatherIssuePost post;
   final Function(WeatherIssuePost, String) onComment;
+  final Function(int) onDelete;
 
-  WeatherIssuePostCard({required this.post, required this.onComment});
+  WeatherIssuePostCard({required this.post, required this.onComment, required this.onDelete});
 
   @override
   _WeatherIssuePostCardState createState() => _WeatherIssuePostCardState();
@@ -197,10 +221,19 @@ class _WeatherIssuePostCardState extends State<WeatherIssuePostCard> {
               },
               child: Text('Comment'),
             ),
+            SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () {
+                widget.onDelete(widget.post.id);
+              },
+              child: Text('Delete Post'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red, // Red color for delete button
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 }
-
