@@ -24,7 +24,7 @@ class ReportPage extends StatelessWidget {
           },
         ),
         title: Text('Quick Report'),
-        backgroundColor: Colors.grey[600],
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

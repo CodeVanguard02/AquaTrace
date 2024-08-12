@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'SeeReport.dart';
-import 'chat.dart';
 import 'report_page.dart';
-import 'profile_page.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'announcements.dart';
-
+import 'education_page.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:mysql1/mysql1.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'trading.dart';
 void main() => runApp(const AquaTraceApp());
 
 class AquaTraceApp extends StatelessWidget {
@@ -719,20 +722,79 @@ class _SignUpFormState extends State<SignUpForm> {
 //Start of the home page
 
 
-class MainPage extends StatelessWidget {
+class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
+
+  @override
+  _MainPageState createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  File? _imageFile;
+  final _picker = ImagePicker();
+
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future<void> _updatePin() async {
+    final conn = await MySqlConnection.connect(ConnectionSettings(
+      host: 'your_host', // Replace with your MySQL host
+      port: 3306,
+      user: 'your_username', // Replace with your MySQL username
+      db: 'your_database', // Replace with your MySQL database name
+      password: 'your_password', // Replace with your MySQL password
+    ));
+
+    await conn.query(
+        'UPDATE users SET pin = ? WHERE email = ?',
+        ['new_pin', 'shabalalamasibonge@gmail.com'] // Replace with the actual new PIN and user's email
+    );
+
+    await conn.close();
+  }
+
+  void _logSupportTicket(BuildContext context) {
+    final String email = 'shabalalamasibonge@gmail.com';
+    print('Support ticket logged for email: $email');
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Chat Support'),
+          content: const Text('A support ticket has been logged. You will be connected with an assistant shortly.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Account'),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {
-            Scaffold.of(context).openDrawer();
-          },
-        ),
         backgroundColor: Colors.blue,
       ),
       drawer: Drawer(
@@ -740,22 +802,105 @@ class MainPage extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
-              child: const Text(
-                'Welcome\nAquaTrace',
-                style: TextStyle(color: Colors.white, fontSize: 25),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: CircleAvatar(
+                      radius: 40,
+                      backgroundImage: _imageFile != null
+                          ? FileImage(_imageFile!)
+                          : AssetImage('assets/profileplaceholder.png') as ImageProvider,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Masibonge', // Replace with the logged-in user's name
+                    style: TextStyle(color: Colors.white, fontSize: 24),
+                  ),
+                ],
               ),
               decoration: const BoxDecoration(
                 color: Colors.blue,
               ),
             ),
+            Divider(),
             ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text('Profile'),
+              leading: Icon(Icons.edit),
+              title: Text('Update PIN'),
+              onTap: () async {
+                print('Update PIN');
+                await _updatePin();
+                print('PIN updated');
+              },
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.privacy_tip),
+              title: Text('Privacy Policy'),
               onTap: () {
-                Navigator.push(
+                _launchURL('https://aquatraceprivacypolicy.vercel.app/');
+              },
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.description),
+              title: Text('Terms and Conditions'),
+              onTap: () {
+                _launchURL('https://aquatrace-ts-cs.vercel.app/');
+              },
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Profile Management'),
+              onTap: () {
+                print('Navigate to Profile Management');
+              },
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.delete),
+              title: Text('Delete Account'),
+              onTap: () {
+                print('Delete account');
+              },
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Logout'),
+              onTap: () {
+                Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProfilePage()),
+                  MaterialPageRoute(builder: (context) => SignInPage()),
+                      (route) => false,
                 );
+              },
+            ),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                'Support',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.feedback),
+              title: Text('Feedback'),
+              onTap: () {
+                print('Navigate to Feedback');
+              },
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.chat),
+              title: Text('Chat Support'),
+              onTap: () {
+                _logSupportTicket(context);
               },
             ),
           ],
@@ -796,7 +941,7 @@ class MainPage extends StatelessWidget {
                     ),
                     // CircleAvatar
                     Container(
-                      padding: const EdgeInsets.only(right: 250.0),
+                      padding: const EdgeInsets.only(right: 16.0),
                       child: Container(
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
@@ -897,7 +1042,6 @@ class MainPage extends StatelessWidget {
                         const SizedBox(height: 10),
                         TextButton(
                           onPressed: () {
-                            // Navigate to a new page showing more announcements
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const MoreAnnouncementsPage()),
@@ -931,36 +1075,31 @@ class MainPage extends StatelessWidget {
             label: 'Report',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.credit_card),
+            icon: Icon(Icons.shopping_cart),
             label: 'Transactions',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
+            icon: Icon(Icons.public),
+            label: 'Awareness',
           ),
         ],
         onTap: (int index) {
           if (index == 0) {
             // Navigate to home page
-          }
-          if (index == 1) {
+          } else if (index == 1) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => ReportPage()),
             );
-          }
-          if (index == 2) {
-            // Navigate to chatscreen
+          } else if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const ChatScreen(passengerName: 'Sinesipho')),
+              MaterialPageRoute(builder: (context) => WaterTradingPage()),
             );
-          }
-          if (index == 3) {
-            // Navigate to ProfilePage
+          } else if (index == 3) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const ProfilePage()),
+              MaterialPageRoute(builder: (context) => HygieneAwarenessPage()),
             );
           }
         },

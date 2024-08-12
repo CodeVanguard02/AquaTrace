@@ -77,6 +77,8 @@ flutter:
     - assets/background.jpeg
     - assets/logo.png
     - assets/backgroundimg.jpeg
+    - assets/sdg6banner.jpg
+    - assets/profileplaceholder.png
 
   # assets:
   #   - images/a_dot_burr.jpeg

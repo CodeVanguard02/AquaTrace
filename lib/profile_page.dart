@@ -92,7 +92,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     radius: 50,
                     backgroundImage: _imageFile != null
                         ? FileImage(_imageFile!)
-                        : AssetImage('assets/profile_placeholder.png') as ImageProvider,
+                        : AssetImage('assets/profileplaceholder.png') as ImageProvider,
                   ),
                 ),
                 Positioned(
