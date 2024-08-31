@@ -18,14 +18,14 @@ class _PlumberAdPageState extends State<PlumberAdPage> {
     PlumberAd(
       name: 'John Doe Plumbing',
       services: 'Leak Repair, Pipe Installation',
-      price: 'From \$50', // Escape dollar sign
+      price: 'From \R50', //
       contact: 'john.doe@gmail.com',
       location: 'Johannesburg',
     ),
     PlumberAd(
       name: 'Jane Smith Plumbing',
       services: 'Drain Cleaning, Water Heater Repair',
-      price: 'From \$70', // Escape dollar sign
+      price: 'From \R70', // Escape dollar sign
       contact: 'jane.smith@gmail.com',
       location: 'Cape Town',
     ),

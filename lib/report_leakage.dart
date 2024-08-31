@@ -115,7 +115,7 @@ class _ReportLeakagePageState extends State<ReportLeakagePage> {
                           controller: _descriptionController,
                           decoration: InputDecoration(
                             labelText: 'Describe the leak',
-                            labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            labelStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                             filled: true,
                             fillColor: Colors.white.withOpacity(0.8),
                             border: OutlineInputBorder(

@@ -56,7 +56,6 @@ class SignInPage extends StatefulWidget {
 
 class _SignInPageState extends State<SignInPage> {
   final _usernameController = TextEditingController();
-  final _meterNumberController = TextEditingController();
   final _passwordController = TextEditingController();
 
   String _errorMessage = '';
@@ -65,13 +64,10 @@ class _SignInPageState extends State<SignInPage> {
     setState(() {
       _errorMessage = '';
       String username = _usernameController.text;
-      String meterNumber = _meterNumberController.text;
       String password = _passwordController.text;
 
-      if (username.isEmpty || meterNumber.isEmpty || password.isEmpty) {
-        _errorMessage = 'Username, Meter Number, and Password cannot be empty.';
-      } else if (meterNumber.length != 7 || !RegExp(r'^[0-9]+$').hasMatch(meterNumber)) {
-        _errorMessage = 'Meter Number must be a 7-digit number.';
+      if (username.isEmpty || password.isEmpty) {
+        _errorMessage = 'Username and Password cannot be empty.';
       } else {
         // Navigate to Home Page
         Navigator.push(
@@ -139,22 +135,6 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                   SizedBox(height: 20),
 
-                  // Meter Number TextField
-                  TextField(
-                    controller: _meterNumberController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Meter Number',
-                      labelStyle: TextStyle(color: Colors.white),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.1),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 20),
 
                   // Password TextField
                   TextField(
@@ -980,11 +960,48 @@ class _MainPageState extends State<MainPage> {
                                 ),
                                 const SizedBox(height: 5),
                                 ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => const SeeReportPage()),
-                                    );
+                                  onPressed: () {showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      String password = '';
+                                      return AlertDialog(
+                                        title: const Text('Enter Meter number'),
+                                        content: TextField(
+                                          onChanged: (value) {
+                                            password = value;
+                                          },
+                                          obscureText: true,
+                                          decoration: const InputDecoration(hintText: "Meter Number"),
+                                        ),
+                                        actions: <Widget>[
+                                          TextButton(
+                                            child: const Text('Cancel'),
+                                            onPressed: () {
+                                              Navigator.of(context).pop(); // Close the dialog
+                                            },
+                                          ),
+                                          TextButton(
+                                            child: const Text('OK'),
+                                            onPressed: () {
+                                              // Replace 'your_password' with the actual password to check against
+                                              if (password == '1234567') {
+                                                Navigator.of(context).pop(); // Close the dialog
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(builder: (context) => const SeeReportPage()),
+                                                );
+                                              } else {
+                                                // Show an error message or handle incorrect password
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text('Incorrect password')),
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.blue[900],
@@ -1068,19 +1085,19 @@ class _MainPageState extends State<MainPage> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'House',
+            label: 'Home',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.report),
-            label: 'Report',
+            label:'Report',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
-            label: 'Transactions',
+            label:'Transactions',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.public),
-            label: 'Awareness',
+            label:'Awareness',
           ),
         ],
         onTap: (int index) {
@@ -1091,10 +1108,49 @@ class _MainPageState extends State<MainPage> {
               context,
               MaterialPageRoute(builder: (context) => ReportPage()),
             );
-          } else if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => WaterTradingPage()),
+          }else if (index == 2) {
+            // Prompt the user to enter a password before navigating to the WaterTradingPage
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                String password = '';
+                return AlertDialog(
+                  title: Text('Enter Water Meter Number'),
+                  content: TextField(
+                    onChanged: (value) {
+                      password = value;
+                    },
+                    obscureText: true,
+                    decoration: InputDecoration(hintText: "Meter Number"),
+                  ),
+                  actions: <Widget>[
+                    TextButton(
+                      child: Text('Cancel'),
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Close the dialog
+                      },
+                    ),
+                    TextButton(
+                      child: Text('OK'),
+                      onPressed: () {
+                        // Replace 'your_password' with the actual password to check against
+                        if (password == '1234567') {
+                          Navigator.of(context).pop(); // Close the dialog
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => WaterTradingPage()),
+                          );
+                        } else {
+                          // Show an error message or handle incorrect password
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Incorrect password')),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                );
+              },
             );
           } else if (index == 3) {
             Navigator.push(

@@ -13,9 +13,9 @@ class MoreAnnouncementsPage extends StatelessWidget {
         child: Column(
           children: [
             Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/backgroundimg.jpeg'),
+                  image: AssetImage("assets/backgroundimg.jpeg"),
                   fit: BoxFit.cover,
                 ),
               ),
