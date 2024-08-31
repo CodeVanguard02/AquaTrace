@@ -9,6 +9,8 @@ import 'package:mysql1/mysql1.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'trading.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 void main() => runApp(const AquaTraceApp());
 
 class AquaTraceApp extends StatelessWidget {
@@ -165,12 +167,16 @@ class _SignInPageState extends State<SignInPage> {
                   // Login Button
                   ElevatedButton(
                     onPressed: _login,
-                    child: Text('Log In'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue, // Button color
-                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 100),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                    child: const Text('Log In'),
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(Colors.blue), // Button color
+                      padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                        const EdgeInsets.symmetric(vertical: 15, horizontal: 100),
+                      ),
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                   ),
@@ -358,25 +364,67 @@ class _SignUpFormState extends State<SignUpForm> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      // Pop-up message for successful registration
-      Fluttertoast.showToast(
-        msg: "Account created successfully!",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
+      // Prepare the data to be sent to the API
+      Map<String, dynamic> formData = {
+        'name': _name,
+        'surname': _surname,
+        'cellno': _cellno,
+        'meterno': _meterno,
+        'email': _email,
+        'password': _password,
+        'gender': _selectedGender,
+      };
 
-      // Navigate to the Sign-In page
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => SignInPage()),
-      );
+      // Send a POST request to your Node.js/Express API
+      try {
+        var response = await http.post(
+          Uri.parse('http://yourapiurl.com/register'), // Replace with your API URL
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode(formData),
+        );
+
+        if (response.statusCode == 200) {
+          // Show success message
+          Fluttertoast.showToast(
+            msg: "Account created successfully!",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
+
+          // Navigate to the Sign-In page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => SignInPage()),
+          );
+        } else {
+          // Show error message if the response was not successful
+          Fluttertoast.showToast(
+            msg: "Error: ${response.body}",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
+        }
+      } catch (error) {
+        // Show error message if the request failed
+        Fluttertoast.showToast(
+          msg: "Failed to connect to the server",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
     }
   }
 
@@ -494,9 +542,7 @@ class _SignUpFormState extends State<SignUpForm> {
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your home water meter number';
-                          } else if (value.length != 7 || !RegExp(r'^[0-9]+$').hasMatch(value)) {
-                            return 'Meter Number must be a 7-digit number';
+                            return 'Please enter your meter number';
                           }
                           return null;
                         },
@@ -519,7 +565,6 @@ class _SignUpFormState extends State<SignUpForm> {
                             borderSide: BorderSide.none,
                           ),
                         ),
-                        keyboardType: TextInputType.emailAddress,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your email';
@@ -545,18 +590,11 @@ class _SignUpFormState extends State<SignUpForm> {
                             borderSide: BorderSide.none,
                           ),
                         ),
-                        keyboardType: TextInputType.emailAddress,
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please confirm your email';
-                          }
                           if (value != _emailController.text) {
                             return 'Emails do not match';
                           }
                           return null;
-                        },
-                        onSaved: (value) {
-                          _confirmEmail = value!;
                         },
                       ),
                       const SizedBox(height: 16.0),
@@ -602,22 +640,28 @@ class _SignUpFormState extends State<SignUpForm> {
                         ),
                         obscureText: true,
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please confirm your password';
-                          }
                           if (value != _passwordController.text) {
                             return 'Passwords do not match';
                           }
                           return null;
                         },
-                        onSaved: (value) {
-                          _confirmPassword = value!;
-                        },
                       ),
                       const SizedBox(height: 16.0),
 
-                      // Gender Dropdown Field
-                      DropdownButtonFormField(
+                      // Gender Dropdown
+                      DropdownButtonFormField<String>(
+                        value: _selectedGender,
+                        items: _genders.map((gender) {
+                          return DropdownMenuItem(
+                            value: gender,
+                            child: Text(gender),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedGender = value!;
+                          });
+                        },
                         decoration: InputDecoration(
                           labelText: 'Gender',
                           labelStyle: const TextStyle(color: Colors.white),
@@ -628,24 +672,19 @@ class _SignUpFormState extends State<SignUpForm> {
                             borderSide: BorderSide.none,
                           ),
                         ),
-                        value: _selectedGender,
-                        items: _genders.map((String gender) {
-                          return DropdownMenuItem(
-                            value: gender,
-                            child: Text(gender),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedGender = value as String;
-                          });
-                        },
-                        onSaved: (value) {
-                          _selectedGender = value as String;
-                        },
                       ),
-                      const SizedBox(height: 20.0),
-
+                      const SizedBox(height: 20),
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: _submit,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue, // Background color
+                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                            textStyle: const TextStyle(fontSize: 18),
+                          ),
+                          child: const Text('Register'),
+                        ),
+                      ),
                       // Register Button
                       ElevatedButton(
                         onPressed: _submit,
