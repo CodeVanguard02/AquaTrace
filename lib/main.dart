@@ -1019,7 +1019,7 @@ class _MainPageState extends State<MainPage> {
                       children: [
                         Center(
                           child: const Text(
-                            'Recent Water Updates',
+                            'Recent Announcements',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -1068,7 +1068,7 @@ class _MainPageState extends State<MainPage> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Home',
+            label: 'House',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.report),
