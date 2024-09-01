@@ -52,7 +52,7 @@ class WaterTradingPage extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildOverviewCard('Available Water', '2,478L', Icons.water, Colors.blue[800]!),
+                _buildOverviewCard('Available Water to sell', '2,478L', Icons.water, Colors.blue[800]!),
                 _buildOverviewCard('Total Sales', 'R52,478.90', Icons.attach_money, Colors.green[800]!),
               ],
             ),
@@ -441,7 +441,17 @@ class Seller {
   Seller(this.name, this.waterCredit, this.price, this.rating, this.location, this.trades);
 }
 
-class SellPage extends StatelessWidget {
+class SellPage extends StatefulWidget {
+  @override
+  _SellPageState createState() => _SellPageState();
+}
+
+class _SellPageState extends State<SellPage> {
+  List<Trade> _tradeHistory = [];
+  List<Bid> _currentBids = [];
+  double _waterCredit = 100.0; // Example starting water credit
+  String _waterPrice = 'R50.00'; // Example price
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -449,17 +459,142 @@ class SellPage extends StatelessWidget {
         title: Text('Sell Water'),
         backgroundColor: Colors.green,
       ),
-      body: Center(
-        child: Text(
-          'Sell Page Content Here',
-          style: TextStyle(fontSize: 24.0),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Text(
+              'Available Water Credits: $_waterCredit L',
+              style: TextStyle(fontSize: 18.0),
+            ),
+            SizedBox(height: 20.0),
+            ElevatedButton(
+              onPressed: _showSellDialog,
+              child: Text('Sell Water'),
+            ),
+            SizedBox(height: 20.0),
+            _buildCurrentBidsSection(),
+            SizedBox(height: 20.0),
+            _buildTradeHistorySection(),
+          ],
         ),
       ),
     );
   }
+
+  Widget _buildCurrentBidsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Current Bids:', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+        SizedBox(height: 10.0),
+        _currentBids.isEmpty
+            ? Text('No current bids.')
+            : ListView.builder(
+          shrinkWrap: true,
+          itemCount: _currentBids.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text('Bid: ${_currentBids[index].price} for ${_currentBids[index].quantity}L'),
+              subtitle: Text('From: ${_currentBids[index].buyerName}'),
+              trailing: ElevatedButton(
+                onPressed: () {
+                  _acceptBid(index);
+                },
+                child: Text('Accept'),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTradeHistorySection() {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Trade History:', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10.0),
+          _tradeHistory.isEmpty
+              ? Text('No trades yet.')
+              : Expanded(
+            child: ListView.builder(
+              itemCount: _tradeHistory.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text('${_tradeHistory[index].quantity}L sold for ${_tradeHistory[index].price}'),
+                  subtitle: Text('Buyer: ${_tradeHistory[index].buyerName} | Review: ${_tradeHistory[index].review}'),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSellDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Set Water Price'),
+          content: TextField(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Price per Liter (R)',
+            ),
+            keyboardType: TextInputType.number,
+            onChanged: (value) {
+              setState(() {
+                _waterPrice = 'R$value';
+              });
+            },
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                // Add blockchain integration to record price
+                Navigator.pop(context);
+              },
+              child: Text('Set Price'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _acceptBid(int index) {
+    // Logic to accept bid and update blockchain transaction
+    setState(() {
+      _waterCredit -= _currentBids[index].quantity;
+      _tradeHistory.add(Trade(
+        quantity: _currentBids[index].quantity,
+        price: _currentBids[index].price,
+        buyerName: _currentBids[index].buyerName,
+        review: 'No review yet',
+      ));
+      _currentBids.removeAt(index);
+    });
+  }
 }
 
-void main() => runApp(MaterialApp(
-  home: WaterTradingPage(),
-));
+class Trade {
+  final double quantity;
+  final String price;
+  final String buyerName;
+  final String review;
 
+  Trade({required this.quantity, required this.price, required this.buyerName, required this.review});
+}
+
+class Bid {
+  final double quantity;
+  final String price;
+  final String buyerName;
+
+  Bid({required this.quantity, required this.price, required this.buyerName});
+}
