@@ -685,18 +685,7 @@ class _SignUpFormState extends State<SignUpForm> {
                           child: const Text('Register'),
                         ),
                       ),
-                      // Register Button
-                      ElevatedButton(
-                        onPressed: _submit,
-                        child: const Text('Register'),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          backgroundColor: Colors.blue, // Match the register button style
-                        ),
-                      ),
+                  
                       const SizedBox(height: 10),
 
                       // Sign-In Navigation Row
@@ -763,7 +752,7 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _updatePin() async {
     final conn = await MySqlConnection.connect(ConnectionSettings(
-      host: 'your_host', // Replace with your MySQL host
+      host: 'localhost', // Replace with your MySQL host
       port: 3306,
       user: 'your_username', // Replace with your MySQL username
       db: 'your_database', // Replace with your MySQL database name
@@ -951,7 +940,7 @@ class _MainPageState extends State<MainPage> {
                         child: const Text(
                           'Welcome to AquaTrace',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 30,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -960,7 +949,7 @@ class _MainPageState extends State<MainPage> {
                     ),
                     // CircleAvatar
                     Container(
-                      padding: const EdgeInsets.only(right: 16.0),
+                      padding: const EdgeInsets.only(right: 260.0),
                       child: Container(
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,

@@ -1,8 +1,8 @@
 const app = require('./app');
-const port = 5080;
+const port = 3307;
 
 
 
 app.listen(port, ()=>{
-    console.log('the api running on http://localhost:%d', port);
+    console.log('the api running on http://localhost:33060', port);
 })

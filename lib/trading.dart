@@ -191,7 +191,11 @@ class BuyPage extends StatefulWidget {
 class _BuyPageState extends State<BuyPage> {
   List<Seller> _sellers = [
     Seller('Masibonge Shabalala', '110L', 'R45.00', '4.5', 'Gauteng', 10),
-    Seller('Simon Ndlovu', '200L', 'R90.00', '4.7', 'Pretoria', 20),
+    Seller('Simon Ndlovu', '20L', 'R90.00', '4.7', 'Pretoria', 9),
+    Seller('Timelyin Abiodun', '190L', 'R45.00', '4.5', 'Gauteng', 6),
+    Seller('Nthabiseng Sedisha', '200L', 'R87.00', '4.7', 'Pretoria', 21),
+    Seller('Zama Xulu', '110L', 'R45.00', '4.5', 'KwaGuqa', 10),
+    Seller('Twarisani Nxumalo', '1000L', 'R900.00', '4.7', 'Ladysmith', 29),
     // Additional sellers...
   ];
 
@@ -376,10 +380,10 @@ class _BuyPageState extends State<BuyPage> {
                     // Action to buy water.
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
+                    backgroundColor: const Color.fromARGB(255, 15, 92, 224),
                     minimumSize: Size(double.infinity, 50),
                   ),
-                  child: Text('Buy', style: TextStyle(fontSize: 18.0)),
+                  child: Text('Buy', style: TextStyle(fontSize: 18.0),),
                 ),
               ),
               SizedBox(height: 20.0),
@@ -447,34 +451,77 @@ class SellPage extends StatefulWidget {
 }
 
 class _SellPageState extends State<SellPage> {
-  List<Trade> _tradeHistory = [];
-  List<Bid> _currentBids = [];
+  List<Trade> _tradeHistory = [
+    Trade(quantity: 20.0, price: 'R60.00', buyerName: 'Alice', review: 'Smooth transaction'),
+    Trade(quantity: 15.0, price: 'R45.00', buyerName: 'Bob', review: 'Quick and easy'),
+  ];
+
+  List<Bid> _currentBids = [
+    Bid(quantity: 10.0, price: 'R25.00', buyerName: 'Charlie'),
+    Bid(quantity: 5.0, price: 'R12.50', buyerName: 'David'),
+  ];
+
   double _waterCredit = 100.0; // Example starting water credit
   String _waterPrice = 'R50.00'; // Example price
+  double _sellQuantity = 0.0; // Quantity to sell
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // Background color
       appBar: AppBar(
         title: Text('Sell Water'),
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text(
-              'Available Water Credits: $_waterCredit L',
-              style: TextStyle(fontSize: 18.0),
+            // Current Balance Display
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: Colors.blueAccent,
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    '$_waterCredit',
+                    style: TextStyle(fontSize: 32.0, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  Text(
+                    'Current water available to sell (Liters)',
+                    style: TextStyle(fontSize: 18.0, color: Colors.white),
+                  ),
+                ],
+              ),
             ),
             SizedBox(height: 20.0),
+
+            // Payment Method Selection Tabs
+            
+            SizedBox(height: 20.0),
+
+            // Sell Water Button
             ElevatedButton(
               onPressed: _showSellDialog,
-              child: Text('Sell Water'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+              ),
+              child: Text('Sell Water', style: TextStyle(fontSize: 18.0)),
             ),
             SizedBox(height: 20.0),
+
+            // Current Bids Section
             _buildCurrentBidsSection(),
             SizedBox(height: 20.0),
+
+            // Trade History Section
             _buildTradeHistorySection(),
           ],
         ),
@@ -482,31 +529,61 @@ class _SellPageState extends State<SellPage> {
     );
   }
 
-  Widget _buildCurrentBidsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Current Bids:', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
-        SizedBox(height: 10.0),
-        _currentBids.isEmpty
-            ? Text('No current bids.')
-            : ListView.builder(
-          shrinkWrap: true,
-          itemCount: _currentBids.length,
-          itemBuilder: (context, index) {
-            return ListTile(
-              title: Text('Bid: ${_currentBids[index].price} for ${_currentBids[index].quantity}L'),
-              subtitle: Text('From: ${_currentBids[index].buyerName}'),
-              trailing: ElevatedButton(
-                onPressed: () {
-                  _acceptBid(index);
-                },
-                child: Text('Accept'),
-              ),
-            );
-          },
+  // Build Payment Method Button
+  Widget _buildPaymentMethodButton(String title, bool isSelected) {
+    return Expanded(
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blueAccent : Colors.white,
+          borderRadius: BorderRadius.circular(25.0),
+          border: Border.all(color: Colors.blueAccent, width: 2),
         ),
-      ],
+        padding: EdgeInsets.symmetric(vertical: 110.0),
+        child: Center(
+          child: Text(
+            title,
+            style: TextStyle(color: isSelected ? Colors.white : Colors.blueAccent),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCurrentBidsSection() {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Current Bids:', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10.0),
+          _currentBids.isEmpty
+              ? Text('No current bids.')
+              : Expanded(
+                  child: ListView.builder(
+                    itemCount: _currentBids.length,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        elevation: 4.0,
+                        margin: EdgeInsets.symmetric(vertical: 8.0),
+                        child: ListTile(
+                          title: Text('Bid: ${_currentBids[index].price} for ${_currentBids[index].quantity}L'),
+                          subtitle: Text('From: ${_currentBids[index].buyerName}'),
+                          trailing: ElevatedButton(
+                            onPressed: () {
+                              _acceptBid(index);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
+                            ),
+                            child: Text('Accept'),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+        ],
+      ),
     );
   }
 
@@ -520,16 +597,20 @@ class _SellPageState extends State<SellPage> {
           _tradeHistory.isEmpty
               ? Text('No trades yet.')
               : Expanded(
-            child: ListView.builder(
-              itemCount: _tradeHistory.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text('${_tradeHistory[index].quantity}L sold for ${_tradeHistory[index].price}'),
-                  subtitle: Text('Buyer: ${_tradeHistory[index].buyerName} | Review: ${_tradeHistory[index].review}'),
-                );
-              },
-            ),
-          ),
+                  child: ListView.builder(
+                    itemCount: _tradeHistory.length,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        elevation: 4.0,
+                        margin: EdgeInsets.symmetric(vertical: 8.0),
+                        child: ListTile(
+                          title: Text('${_tradeHistory[index].quantity}L sold for ${_tradeHistory[index].price}'),
+                          subtitle: Text('Buyer: ${_tradeHistory[index].buyerName} | Review: ${_tradeHistory[index].review}'),
+                        ),
+                      );
+                    },
+                  ),
+                ),
         ],
       ),
     );
@@ -540,26 +621,47 @@ class _SellPageState extends State<SellPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Set Water Price'),
-          content: TextField(
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Price per Liter (R)',
-            ),
-            keyboardType: TextInputType.number,
-            onChanged: (value) {
-              setState(() {
-                _waterPrice = 'R$value';
-              });
-            },
+          title: Text('Set Water Price and Quantity'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Price per Liter (R)',
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  setState(() {
+                    _waterPrice = 'R$value';
+                  });
+                },
+              ),
+              SizedBox(height: 10.0),
+              TextField(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Quantity (L)',
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  setState(() {
+                    _sellQuantity = double.tryParse(value) ?? 0.0;
+                  });
+                },
+              ),
+            ],
           ),
           actions: [
             ElevatedButton(
               onPressed: () {
-                // Add blockchain integration to record price
+                // Add blockchain integration to record the sell order
                 Navigator.pop(context);
               },
-              child: Text('Set Price'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+              ),
+              child: Text('Set Price and Quantity'),
             ),
           ],
         );

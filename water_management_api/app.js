@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const cors = require('cors');
 
 const app = express();
-const port = 3000;
+const port = 3307;
 
 // Initialize SQLite database
 let db = new sqlite3.Database('./aquatrace.db', (err) => {

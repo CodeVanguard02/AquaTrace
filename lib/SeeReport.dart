@@ -77,16 +77,7 @@ class _ReportPageState extends State<SeeReportPage> {
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: ElevatedButton(
-              onPressed: () {
-                // Navigate to data plans page
-              },
-              child: const Text('View Water Plans'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-              ),
-            ),
+        
           ),
         ],
       ),
@@ -172,7 +163,7 @@ class _ReportPageState extends State<SeeReportPage> {
                           ),
                           if (currentWaterUsage >= totalWaterUsageLimit - criticalWaterLevel)
                             const Padding(
-                              padding: EdgeInsets.only(top: 20),
+                              padding: EdgeInsets.only(top: 10),
                               child: Text(
                                 'Warning: Water is about to run out!',
                                 style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
